@@ -4,15 +4,16 @@ import Order from '@/models/Order';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
     const body = await request.json();
     const { status } = body;
+    const resolvedParams = await params;
 
     const order = await Order.findByIdAndUpdate(
-      params.id,
+      resolvedParams.id,
       { status },
       { new: true }
     );
@@ -30,11 +31,12 @@ export async function PATCH(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
-    const order = await Order.findById(params.id).lean();
+    const resolvedParams = await params;
+    const order = await Order.findById(resolvedParams.id).lean();
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
